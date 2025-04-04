@@ -7,7 +7,8 @@ router.get('/getallCoupons',couponController.getallCoupons);
 router.post('/getcouponByid',couponController.getcouponsByid);
 router.post('/deleteCoupon',couponController.deleteCoupon);
 router.post('/updateCoupons',couponController.updatecoupon);
+router.get('/getActiveCoupons',couponController.getactiveCoupons);
 
- 
+
 module.exports=router
  

@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 
 
 exports.addCoupon = async (req, res) => {
-    const { coupon_code,discount,amount,start_date,expairy_date} = req.body
+    const { coupon_code,discount,amount,start_date,expairy_date,status} = req.body
 
     try {
         if (!coupon_code) {
@@ -21,8 +21,8 @@ exports.addCoupon = async (req, res) => {
 
          
         const coupon = await pool.query(
-            'INSERT INTO public.tbl_coupons(coupon_code,discount,amount,start_date,expairy_date) VALUES($1,$2,$3,$4,$5)',
-            [coupon_code,discount,amount,start_date,expairy_date]
+            'INSERT INTO public.tbl_coupons(coupon_code,discount,amount,start_date,expairy_date,status) VALUES($1,$2,$3,$4,$5,$6)',
+            [coupon_code,discount,amount,start_date,expairy_date,status]
         )
 
         res.status(200).json({
@@ -84,7 +84,7 @@ exports.getcouponsByid=async(req,res)=>{
 
 exports.updatecoupon=async(req,res)=>{
     try{
-    const { coupon_id,coupon_code,discount,amount,start_date,expairy_date}=req.body
+    const { coupon_id,coupon_code,discount,amount,start_date,expairy_date,status}=req.body
     const fileds=[];
     const values=[];
     let index=1;
@@ -114,7 +114,10 @@ exports.updatecoupon=async(req,res)=>{
         values.push(expairy_date)
     }
      
-    
+    if(status){
+        fileds.push(`"status"=$${index++}`);
+        values.push(status)
+    }
      
     values.push(coupon_id);
     if(fileds.length === 0){
@@ -134,7 +137,7 @@ exports.updatecoupon=async(req,res)=>{
             statusCode:404,
             message:'coupon Not Found'
         
-        })
+        })  
     }
     res.status(200).json({
         statusCode:200,
@@ -196,3 +199,22 @@ exports.deleteCoupon = async (req, res) => {
 };
 
  
+ 
+exports.getactiveCoupons = async (req, res) => {
+    try {
+        const query = "SELECT * FROM tbl_coupons WHERE status = $1";
+        const allCoupons = await pool.query(query, ['Active']); // Fetch only active coupons
+
+        res.status(200).json({
+            statusCode: 200,
+            message: 'Coupons fetched successfully',
+            coupons: allCoupons.rows,
+        });
+    } catch (err) {
+        console.error("Error fetching active coupons:", err);
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Internal Server Error'
+        });
+    }
+};

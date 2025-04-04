@@ -31,7 +31,7 @@ exports.adminLogin = async (req, res) => {
 
 
 exports.register=async (req, res) => {
-    const { email, password } = req.body;
+    const { email, phone_number,password } = req.body;
 
     try {
         
@@ -50,8 +50,8 @@ exports.register=async (req, res) => {
 
      
         await pool.query(
-            'INSERT INTO public.admin (email, password) VALUES ($1, $2)',
-            [email, hashedPassword]
+            'INSERT INTO public.admin (email,phone_number ,password) VALUES ($1, $2,$3)',
+            [email, phone_number,hashedPassword]
         );
 
         res.status(201).json({ message: 'Admin registered successfully' });

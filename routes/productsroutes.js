@@ -12,6 +12,9 @@ router.post('/updateProduct',upload.fields([
     {name:'product_image',maxCount:1}]), productcontroller.updateproduct);
 
 router.post('/deleteProduct',productcontroller.deleteProduct);
+router.post('/getproductsBycategory',productcontroller.getproductBycategory);
+router.post('/updateProductStatus',productcontroller.updateProductStatus);
 
+  
   
 module.exports=router
