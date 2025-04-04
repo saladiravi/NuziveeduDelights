@@ -6,7 +6,7 @@ const pool = require('../db/db')
 exports.addproduct = async (req, res) => {
     try {
 
-        const { product_name, stock, category_id, price_grams } = req.body;
+        const { product_name, stock,description, category_id, price_grams } = req.body;
 
         if (!product_name || !category_id || !price_grams) {
             return res.status(400).json({
@@ -21,10 +21,10 @@ exports.addproduct = async (req, res) => {
 
 
         const productQuery = `
-            INSERT INTO public.tbl_product (product_name, product_image, stock, category_id)
-            VALUES ($1, $2, $3, $4) RETURNING product_id
+            INSERT INTO public.tbl_product (product_name, product_image, stock, description,category_id)
+            VALUES ($1, $2, $3, $4,$5) RETURNING product_id
         `;
-        const productResult = await pool.query(productQuery, [product_name, productImage, stock, category_id]);
+        const productResult = await pool.query(productQuery, [product_name, productImage, stock,description, category_id]);
         const product_id = productResult.rows[0].product_id;
 
 
@@ -46,6 +46,7 @@ exports.addproduct = async (req, res) => {
                 product_name,
                 product_image: productImage,
                 stock,
+                description,
                 category_id,
                 price_grams: priceGramsData
             }
@@ -69,6 +70,7 @@ exports.getAllProduct = async (req, res) => {
                 p.product_name,
                 p.product_image,
                 p.stock,
+                p.description,
                 c.category_name,
                 json_agg(
                     json_build_object(
@@ -79,7 +81,7 @@ exports.getAllProduct = async (req, res) => {
             FROM tbl_product p
             INNER JOIN tbl_grams g ON p.product_id = g.product_id
             INNER JOIN tbl_category c ON p.category_id = c.category_id
-            GROUP BY p.product_id, p.product_name, p.product_image, p.stock, c.category_name;
+            GROUP BY p.product_id, p.product_name, p.product_image, p.stock,p.description,c.category_name;
         `;
 
         const result = await pool.query(query); // Execute the SQL query
@@ -116,6 +118,7 @@ exports.getProductById = async (req, res) => {
                 p.product_name,
                 p.product_image,
                 p.stock,
+                p.description,
                 c.category_name,
                 json_agg(
                     json_build_object(
@@ -127,7 +130,7 @@ exports.getProductById = async (req, res) => {
             INNER JOIN tbl_grams g ON p.product_id = g.product_id
             INNER JOIN tbl_category c ON p.category_id = c.category_id
             WHERE p.product_id = $1
-            GROUP BY p.product_id, p.product_name, p.product_image, p.stock, c.category_name;
+            GROUP BY p.product_id, p.product_name, p.product_image, p.stock,p.description, c.category_name;
         `;
 
         const result = await pool.query(query, [product_id]);
@@ -156,7 +159,7 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        const { product_id, product_name, stock, category_id, price_grams } = req.body;
+        const { product_id, product_name, stock,description, category_id, price_grams } = req.body;
 
         if (!product_id || !product_name || !category_id || !price_grams) {
             return res.status(400).json({
@@ -177,7 +180,7 @@ exports.updateProduct = async (req, res) => {
                 product_image = COALESCE($4, product_image)
             WHERE product_id = $5
         `;
-        await pool.query(updateProductQuery, [product_name, stock, category_id, productImage, product_id]);
+        await pool.query(updateProductQuery, [product_name, stock,description, category_id, productImage, product_id]);
 
        
         const priceGramsData = Array.isArray(price_grams) ? price_grams : JSON.parse(price_grams);
@@ -200,6 +203,7 @@ exports.updateProduct = async (req, res) => {
                 product_name,
                 product_image: productImage,
                 stock,
+                description,
                 category_id,
                 price_grams: priceGramsData
             }
