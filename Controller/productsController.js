@@ -157,9 +157,9 @@ exports.getProductById = async (req, res) => {
 };
 
 
-exports.updateProduct = async (req, res) => {
+exports.updateproduct = async (req, res) => {
     try {
-        const { product_id, product_name, stock,description, category_id, price_grams } = req.body;
+        const { product_id, product_name, stock, description, category_id, price_grams } = req.body;
 
         if (!product_id || !product_name || !category_id || !price_grams) {
             return res.status(400).json({
@@ -168,7 +168,7 @@ exports.updateProduct = async (req, res) => {
             });
         }
 
-       
+
         const productImage = req.files?.product_image?.[0]?.filename
             ? `uploads/${req.files.product_image[0].filename}`
             : null;
@@ -176,18 +176,18 @@ exports.updateProduct = async (req, res) => {
         // Update product details
         const updateProductQuery = `
             UPDATE public.tbl_product 
-            SET product_name = $1, stock = $2, category_id = $3, 
-                product_image = COALESCE($4, product_image)
-            WHERE product_id = $5
+            SET product_name = $1, stock = $2, category_id = $3,description= $4,
+                product_image = COALESCE($5, product_image)
+            WHERE product_id = $6
         `;
-        await pool.query(updateProductQuery, [product_name, stock,description, category_id, productImage, product_id]);
+        await pool.query(updateProductQuery, [product_name, stock, category_id, description,productImage, product_id]);
 
-       
+
         const priceGramsData = Array.isArray(price_grams) ? price_grams : JSON.parse(price_grams);
 
-      
+
         await pool.query(`DELETE FROM public.tbl_grams WHERE product_id = $1`, [product_id]);
- 
+
         for (const { grams, price } of priceGramsData) {
             await pool.query(
                 `INSERT INTO public.tbl_grams (grams, price, product_id) VALUES ($1, $2, $3)`,
