@@ -9,7 +9,7 @@ router.post('/addproduct',upload.fields([
 router.get('/getallProduct',productcontroller.getAllProduct)
 router.post('/getproductbyId',productcontroller.getProductById);
 router.post('/updateProduct',upload.fields([
-    {name:'product_image',maxCount:1}]), productcontroller.updateproduct);
+    {name:'product_image',maxCount:1}]), productcontroller.updateProduct);
 
 router.post('/deleteProduct',productcontroller.deleteProduct);
 router.post('/getproductsBycategory',productcontroller.getproductBycategory);
