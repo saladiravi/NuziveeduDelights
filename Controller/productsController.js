@@ -78,7 +78,7 @@ exports.getAllProduct = async (req, res) => {
                         'grams', g.grams, 
                         'price', g.price
                     )
-                ) AS price_details
+                ) AS price_grams
             FROM tbl_product p
             INNER JOIN tbl_grams g ON p.product_id = g.product_id
             INNER JOIN tbl_category c ON p.category_id = c.category_id
