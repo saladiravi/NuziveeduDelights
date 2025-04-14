@@ -75,6 +75,7 @@ exports.getAllProduct = async (req, res) => {
                 c.category_name,
                 json_agg(
                     json_build_object(
+                        'pricegrams_id',g.pricegrams_id,
                         'grams', g.grams, 
                         'price', g.price
                     )
@@ -85,7 +86,7 @@ exports.getAllProduct = async (req, res) => {
             GROUP BY p.product_id, p.product_name, p.product_image, p.stock,p.description,product_status,c.category_name;
         `;
 
-        const result = await pool.query(query); // Execute the SQL query
+        const result = await pool.query(query);
 
         res.status(200).json({
             statusCode: 200,
@@ -174,7 +175,7 @@ exports.updateProduct = async (req, res) => {
             ? `uploads/${req.files.product_image[0].filename}`
             : null;
 
-       
+
         const updateProductQuery = `
             UPDATE public.tbl_product 
             SET product_name = $1, stock = $2, category_id = $3, description = $4,
@@ -302,7 +303,7 @@ exports.getproductBycategory = async (req, res) => {
         GROUP BY p.product_id, p.product_name, p.product_image, p.stock, p.description, c.category_name;
     `;
 
-        const result = await pool.query(query, [category_name]);  
+        const result = await pool.query(query, [category_name]);
 
 
 
@@ -370,3 +371,60 @@ exports.updateProductStatus = async (req, res) => {
         });
     }
 };
+
+
+
+
+exports.getallcategoryproducts = async (req, res) => {
+    try {
+        const query = `
+           SELECT 
+    c.category_id,
+    c.category_name,
+    c.category_image,
+    json_agg(
+        DISTINCT jsonb_build_object(
+            'product_id', p.product_id,
+            'product_name', p.product_name,
+            'product_image', p.product_image,
+            'stock', p.stock,
+            'description', p.description,
+            'product_status', p.product_status,
+            'grams', (
+                SELECT json_agg(
+                    jsonb_build_object(
+                        'pricegrams_id', g.pricegrams_id,
+                        'grams', g.grams,
+                        'price', g.price
+                    )
+                )
+                FROM tbl_grams g
+                WHERE g.product_id = p.product_id
+            )
+        )
+    ) AS products
+FROM 
+    tbl_category c
+LEFT JOIN 
+    tbl_product p ON c.category_id = p.category_id
+GROUP BY 
+    c.category_id, c.category_name, c.category_image
+ORDER BY 
+    c.category_id;
+        `;
+
+        const result = await pool.query(query);
+
+        res.status(200).json({
+            statusCode: 200,
+            data: result.rows, // Send the formatted data
+        });
+
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Internal Server Error'
+        });
+    }
+}

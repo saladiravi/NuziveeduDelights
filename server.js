@@ -8,6 +8,7 @@ const categoryRoutes = require('./routes/categoryroutes');
 const productRoutes=require('./routes/productsroutes');
 const couponRoutes=require('./routes/couponroutes');
 const carouselRoutes=require('./routes/carouselroutes');
+const cartRoutes=require('./routes/cartroutes');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/category', categoryRoutes);
 app.use('/products', productRoutes);
 app.use('/coupons',couponRoutes);
 app.use('/carousel',carouselRoutes);
+app.use('/cart',cartRoutes);
 
 
 app.listen(5000, () => {
