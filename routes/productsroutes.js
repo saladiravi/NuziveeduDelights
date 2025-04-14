@@ -14,7 +14,7 @@ router.post('/updateProduct',upload.fields([
 router.post('/deleteProduct',productcontroller.deleteProduct);
 router.post('/getproductsBycategory',productcontroller.getproductBycategory);
 router.post('/updateProductStatus',productcontroller.updateProductStatus);
-router.post('/getAllcategoryproducts',productcontroller.getallcategoryproducts);
+router.get('/getAllcategoryproducts',productcontroller.getallcategoryproducts);
 
   
 module.exports=router

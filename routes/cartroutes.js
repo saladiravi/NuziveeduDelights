@@ -8,7 +8,7 @@ router.post('/getcartdetails',cartcontroller.getcartuserByid);
 router.post('/updateCartproduct',cartcontroller.updatecartproduct);
 router.post('/deletecart',cartcontroller.deleteCart);
 router.post('/deleteallcart',cartcontroller.deleteallCart);
-router.post('/getallcarts',cartcontroller.getallCarts);
+router.get('/getallcarts',cartcontroller.getallCarts);
 
 
 module.exports=router

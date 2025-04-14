@@ -375,42 +375,45 @@ exports.updateProductStatus = async (req, res) => {
 
 
 
+
 exports.getallcategoryproducts = async (req, res) => {
     try {
         const query = `
-           SELECT 
-    c.category_id,
+         SELECT 
+    c.category_id AS category,
     c.category_name,
     c.category_image,
-    json_agg(
-        DISTINCT jsonb_build_object(
-            'product_id', p.product_id,
-            'product_name', p.product_name,
-            'product_image', p.product_image,
-            'stock', p.stock,
-            'description', p.description,
-            'product_status', p.product_status,
-            'grams', (
-                SELECT json_agg(
-                    jsonb_build_object(
-                        'pricegrams_id', g.pricegrams_id,
-                        'grams', g.grams,
-                        'price', g.price
+    (
+        SELECT json_agg(product_data)
+        FROM (
+            SELECT 
+                p.product_id,
+                p.category_id,
+                p.description,
+                p.product_name,
+                p.product_image,
+                p.stock,
+                (
+                    SELECT json_agg(
+                        jsonb_build_object(
+                            'grams', g.grams,
+                            'price', g.price,
+                            'pricegrams_id', g.pricegrams_id
+                        )
                     )
-                )
-                FROM tbl_grams g
-                WHERE g.product_id = p.product_id
-            )
-        )
+                    FROM tbl_grams g
+                    WHERE g.product_id = p.product_id
+                ) AS pricegrams
+            FROM tbl_product p
+            WHERE p.category_id = c.category_id
+            AND EXISTS (SELECT 1 FROM tbl_grams g WHERE g.product_id = p.product_id)
+        ) AS product_data
     ) AS products
 FROM 
     tbl_category c
-LEFT JOIN 
-    tbl_product p ON c.category_id = p.category_id
-GROUP BY 
-    c.category_id, c.category_name, c.category_image
 ORDER BY 
     c.category_id;
+
         `;
 
         const result = await pool.query(query);
