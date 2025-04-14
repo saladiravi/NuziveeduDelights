@@ -9,6 +9,7 @@ const productRoutes=require('./routes/productsroutes');
 const couponRoutes=require('./routes/couponroutes');
 const carouselRoutes=require('./routes/carouselroutes');
 const cartRoutes=require('./routes/cartroutes');
+const orderRoutes=require('./routes/orderroutes');
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use('/products', productRoutes);
 app.use('/coupons',couponRoutes);
 app.use('/carousel',carouselRoutes);
 app.use('/cart',cartRoutes);
+app.use('/order',orderRoutes);
+
+
 
 
 app.listen(5000, () => {

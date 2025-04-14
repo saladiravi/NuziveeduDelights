@@ -406,6 +406,7 @@ exports.getallcategoryproducts = async (req, res) => {
                 ) AS pricegrams
             FROM tbl_product p
             WHERE p.category_id = c.category_id
+            AND p.product_status = 'visible'
             AND EXISTS (SELECT 1 FROM tbl_grams g WHERE g.product_id = p.product_id)
         ) AS product_data
     ) AS products
