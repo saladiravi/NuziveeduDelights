@@ -176,8 +176,145 @@ exports.getOrderDetailsByUserId = async (req, res) => {
 };
 
 
+exports.getorders = async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          o.order_id,
+          o.order_number,
+          u.first_name AS  first_name,
+          u.last_name AS  last_name,
+          o.address,
+          o.city,
+          o.state,
+          o.pincode,
+          o.phonenumber,
+          o.total_amount,
+          o.order_status,
+          o.order_date
+          
+        FROM 
+          tbl_order o
+        JOIN 
+          tbl_users u 
+        ON 
+          o.user_id = u.user_id
+        ORDER BY 
+          o.order_date DESC
+      `);
+  
+      res.status(200).json({
+        statusCode: 200,
+        message: 'Orders fetched successfully',
+        data: result.rows,
+      });
+  
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).json({
+        statusCode: 500,
+        message: 'Internal Server Error',
+      });
+    }
+  };
+  
+
+ 
+
+exports.getOrderItems = async (req, res) => {
+  const { order_id } = req.body;
+
+  try {
+    const result = await pool.query(`
+      SELECT 
+        oi.order_items_id,
+        oi.quantity,
+        oi.price AS item_price,
+        pg.grams,
+        pg.price AS price_per_gram,
+        p.product_name,
+        tr.total_amount,
+        p.product_image
+      FROM 
+        tbl_order_items oi
+      JOIN 
+        tbl_grams pg ON oi.pricegrams_id = pg.pricegrams_id
+        JOIN 
+        tbl_order tr ON oi.order_id=tr.order_id
+      JOIN 
+        tbl_product p ON oi.product_id = p.product_id
+      WHERE 
+        oi.order_id = $1
+      ORDER BY 
+        oi.order_items_id ASC
+    `, [order_id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        statusCode: 404,
+        message: 'No items found for this order',
+      });
+    }
+
+    res.status(200).json({
+      statusCode: 200,
+      message: 'Order items fetched successfully',
+      data: result.rows,
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      statusCode: 500,
+      message: 'Internal Server Error',
+    });
+  }
+};
 
 
+ 
+exports.updateOrderStatus = async (req, res) => {
+    try {
+        const { order_id, order_status } = req.body;
 
+        if (!order_id || !order_status) {
+            return res.status(400).json({
+                statusCode: 400,
+                message: 'Product ID and product_status are required'
+            });
+        }
+
+     
+        const updateStatusQuery = `
+            UPDATE public.tbl_order
+            SET order_status = $1 
+            WHERE order_id = $2
+            RETURNING order_id, order_status
+        `;
+
+        const updateResult = await pool.query(updateStatusQuery, [order_status, order_id]);
+
+        if (updateResult.rowCount === 0) {
+            return res.status(404).json({
+                statusCode: 404,
+                message: 'Product not found'
+            });
+        }
+
+        res.status(200).json({
+            statusCode: 200,
+            message: 'Order status updated successfully',
+            product: updateResult.rows[0]
+        });
+
+    } catch (error) {
+        console.error("Error updating product status:", error);
+        res.status(500).json({
+            statusCode: 500,
+            message: 'Internal Server Error'
+        });
+    }
+};
+ 
 
 
