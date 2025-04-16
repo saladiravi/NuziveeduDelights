@@ -6,7 +6,8 @@ exports.getOrderStatusCounts = async (req, res) => {
         SELECT 
           COUNT(*) FILTER (WHERE order_status = 'Pending') AS Pending,
           COUNT(*) FILTER (WHERE order_status = 'Confirmed') AS Confirmed,
-          COUNT(*) FILTER (WHERE order_status = 'Delivered') AS Delivered
+          COUNT(*) FILTER (WHERE order_status = 'Delivered') AS Delivered,
+          COUNT(*) FILTER (WHERE order_status = 'Shipped') AS Shipped
         FROM tbl_order
       `);
   
