@@ -221,11 +221,63 @@ exports.getorders = async (req, res) => {
 
  
 
+// exports.getOrderItems = async (req, res) => {
+//   const { order_id } = req.body;
+
+//   try {
+//     const result = await pool.query(`
+//       SELECT 
+//         oi.order_items_id,
+//         oi.quantity,
+//         oi.price AS item_price,
+//         pg.grams,
+//         pg.price AS price_per_gram,
+//         p.product_name,
+//         tr.total_amount,
+//         p.product_image
+//       FROM 
+//         tbl_order_items oi
+//       JOIN 
+//         tbl_grams pg ON oi.pricegrams_id = pg.pricegrams_id
+//         JOIN 
+//         tbl_order tr ON oi.order_id=tr.order_id
+//       JOIN 
+//         tbl_product p ON oi.product_id = p.product_id
+//       WHERE 
+//         oi.order_id = $1
+//       ORDER BY 
+//         oi.order_items_id ASC
+//     `, [order_id]);
+
+//     if (result.rows.length === 0) {
+//       return res.status(404).json({
+//         statusCode: 404,
+//         message: 'No items found for this order',
+//       });
+//     }
+
+//     res.status(200).json({
+//       statusCode: 200,
+//       message: 'Order items fetched successfully',
+//       data: result.rows,
+//     });
+
+//   } catch (error) {
+//     console.error(error.message);
+//     res.status(500).json({
+//       statusCode: 500,
+//       message: 'Internal Server Error',
+//     });
+//   }
+// };
+
+
 exports.getOrderItems = async (req, res) => {
   const { order_id } = req.body;
 
   try {
-    const result = await pool.query(`
+    // Fetch order items
+    const itemsResult = await pool.query(`
       SELECT 
         oi.order_items_id,
         oi.quantity,
@@ -233,14 +285,11 @@ exports.getOrderItems = async (req, res) => {
         pg.grams,
         pg.price AS price_per_gram,
         p.product_name,
-        tr.total_amount,
         p.product_image
       FROM 
         tbl_order_items oi
       JOIN 
         tbl_grams pg ON oi.pricegrams_id = pg.pricegrams_id
-        JOIN 
-        tbl_order tr ON oi.order_id=tr.order_id
       JOIN 
         tbl_product p ON oi.product_id = p.product_id
       WHERE 
@@ -249,17 +298,31 @@ exports.getOrderItems = async (req, res) => {
         oi.order_items_id ASC
     `, [order_id]);
 
-    if (result.rows.length === 0) {
+    // If no items found
+    if (itemsResult.rows.length === 0) {
       return res.status(404).json({
         statusCode: 404,
         message: 'No items found for this order',
       });
     }
 
+    // Fetch total amount
+    const totalAmountResult = await pool.query(`
+      SELECT total_amount 
+      FROM tbl_order 
+      WHERE order_id = $1
+    `, [order_id]);
+
+    const totalAmount = totalAmountResult.rows[0]?.total_amount || 0;
+
+    // Send response
     res.status(200).json({
       statusCode: 200,
       message: 'Order items fetched successfully',
-      data: result.rows,
+      data: {
+        total_amount: totalAmount,
+        items: itemsResult.rows
+      }
     });
 
   } catch (error) {
@@ -270,7 +333,6 @@ exports.getOrderItems = async (req, res) => {
     });
   }
 };
-
 
  
 exports.updateOrderStatus = async (req, res) => {
